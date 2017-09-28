@@ -2,7 +2,7 @@
 // @name         YouTube Unsubscribe Tool
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Try and click some subscribe buttons pls
+// @description  Go to your subscription feed, scroll to the bottom within the 120s alloted, and voila
 // @author       You
 // @match        https://www.youtube.com/channel/*/channels?*view=*
 // @grant        none
