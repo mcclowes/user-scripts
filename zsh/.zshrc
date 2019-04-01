@@ -1,37 +1,4 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
-
-# Path to your oh-my-zsh installation.
-export ZSH="/Users/<user name goes here>/.oh-my-zsh"
-
-
-# Set list of themes to load
-ZSH_THEME="bureau"
-
-# Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(
-  git
-)
-
-source $ZSH/oh-my-zsh.sh
-
-
-
-
-
-
-## --------------- User configuration --------------- 
-
-# Paths
-
-export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-# export MANPATH="/usr/local/man:$MANPATH"
-
-export PATH="/usr/local/sbin:$PATH"
-
+# Paste beneath existing config
 
 
 # Function to check for updates to the current directory if the CD is a git repo
@@ -43,11 +10,10 @@ cd_git_checker () {
 }
 
 
-
-
-
-
-
+# Brew automcomplete
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+fi
 
 ## --------------- Custom Functions --------------- 
 
@@ -108,7 +74,7 @@ function mcclowes-react-scripts {
 }
 
 function rebaseBitBucketRepo {
-	if [ -z ${var+x} ]; then 
+	if [ ${var+x} ]; then 
 		echo "No destination is set";
 	else;
 		git remote rename origin bitbucket;
@@ -116,6 +82,28 @@ function rebaseBitBucketRepo {
 		git push origin master;
 		git remote rm bitbucket; 
 	fi;
+}
+
+function prepareMcclowesScripts {
+	for FOLDER in packages ; do
+		pushd $FOLDER
+			for FOLDER in babel-preset-mcclowes eslint-config-mcclowes mcclowes-scripts; do
+				pushd $FOLDER
+					rm -rf node-modules;
+					rm package-lock.json;
+					npm install;
+				popd
+			done
+		popd
+		rm -rf node-modules;
+		rm package-lock.json;
+		npm install;
+		git add --all;
+		git commit -am “$1”;
+		git push;
+		npm version patch;
+		git push;
+	done
 }
 
 function editZSH {
@@ -130,7 +118,7 @@ function customFunctions {
 	echo "imgMaxSizeConvertTiny < largest h or w in pixels : 1500 > < target format : png > <destination format : jpeg > - All of the above combined";
 	echo "mcclowes-react-scripts < project name : new-project > - create new react project using mcclowes-scripts create react app config";
 	echo "gitJira <custom message> - make commit pertaining to jira issue";
-	echo "moveRepoBBGH <destination> - rebase repo to new destination";
+	echo "rebaseBitBucketRepo <destination> - rebase repo to new destination (with .git at the end)";
 	echo "workFunctions - echo a list of custom functions for work";
 }
 
@@ -148,12 +136,14 @@ function customFunctions {
 
 
 
-## --------------- Work Functions ---------------
+## --------------- Workshare Functions ---------------
 
 ## Utility function for other functions
 function gitCurrentBranch {
 	git symbolic-ref -q --short HEAD
 }
+
+alias gpr='gco master; git pull; gco -; git rebase master; git push --force-with-lease'
 
 function gitJira {
 	if [ $1 ]; then
@@ -176,12 +166,17 @@ function gitRebaseFromMaster {
 	git checkout master && git pull && git checkout $( gitCurrentBranch ) && git rebase master
 }
 
-function runJestWatch {
+function jestWatch {
 	## -- means pass params to jest
 	npm test -- --watch --runInBand --bail ${1}
 }
 
-function runJestWatchAll {
+function jestWatchNoCache {
+	## -- means pass params to jest
+	npm test -- --watch --no-cache --runInBand --bail ${1}
+}
+
+function jestWatchAll {
 	## -- means pass params to jest
 	npm test -- --watchAll --runInBand --bail ${1}
 }
@@ -191,6 +186,7 @@ function workFunctions {
 	echo "gitRenameBranchCommits - trigger rebase, allowing you to rename all commit since master";
 	echo "gitBranchJira <issue name> - Checkout a branch in the format required to correspond to a Jira issue";
 	echo "gitRebaseFromMaster - Rebase current branch from master";
-	echo "runJestWatch <regex pattern for files> - Run tests, watch and bail";
-	echo "runJestWatchAll <regex pattern for files> - Run all tests, watch and bail";
+	echo "jestWatch <regex pattern for files> - Run tests, watch and bail";
+	echo "jestWatchNoCache <regex pattern for files> - Run tests, watch and bail";
+	echo "jestWatchAll <regex pattern for files> - Run all tests, watch and bail";
 }
