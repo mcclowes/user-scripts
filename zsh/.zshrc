@@ -1,6 +1,5 @@
 # Paste beneath existing config
 
-
 # Function to check for updates to the current directory if the CD is a git repo
 cd () { builtin cd "$@" && cd_git_checker; }
 cd_git_checker () { 
@@ -9,7 +8,6 @@ cd_git_checker () {
 	fi;
 }
 
-
 # Brew automcomplete
 if type brew &>/dev/null; then
   FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
@@ -17,6 +15,11 @@ fi
 
 ## --------------- Custom Functions --------------- 
 
+function editZSH {
+	sublime ~/.zshrc;
+}
+
+## Codogo sites
 function updateCodogoMarketingSites {
 	for FOLDER in codogo-site-write codogo-site-marketing codogo-site-projects codogo-site-consulting ; do
 		pushd $FOLDER
@@ -35,6 +38,7 @@ function upgradeCodogoMarketingSites {
 	done
 }
 
+## image manipulation
 function imgRemoveWhiteBackground {
 	fileType="${1:-png}"
 	blurRad="${2:-20}"
@@ -68,6 +72,7 @@ function imgMaxSizeConvertTiny {
 	tinypng;
 }
 
+## Create react app with custom scripts
 function mcclowes-react-scripts {
 	dirName="${1:-new-project}"
 	create-react-app --scripts-version mcclowes-react-scripts $dirName;
@@ -84,32 +89,6 @@ function rebaseBitBucketRepo {
 	fi;
 }
 
-function prepareMcclowesScripts {
-	for FOLDER in packages ; do
-		pushd $FOLDER
-			for FOLDER in babel-preset-mcclowes eslint-config-mcclowes mcclowes-scripts; do
-				pushd $FOLDER
-					rm -rf node-modules;
-					rm package-lock.json;
-					npm install;
-				popd
-			done
-		popd
-		rm -rf node-modules;
-		rm package-lock.json;
-		npm install;
-		git add --all;
-		git commit -am “$1”;
-		git push;
-		npm version patch;
-		git push;
-	done
-}
-
-function editZSH {
-	sublime ~/.zshrc;
-}
-
 function customFunctions {
 	echo "editZSH - Edit this file";
 	echo "imgRemoveWhiteBackground < file type : png > < blur radius (tolerance) : 20 > - Bulk remove white background from all images in dir of specified format";
@@ -117,7 +96,6 @@ function customFunctions {
 	echo "imgConvertFormat < target format : png > <destination format : jpeg > - Bulk convert images from target format to destination format";
 	echo "imgMaxSizeConvertTiny < largest h or w in pixels : 1500 > < target format : png > <destination format : jpeg > - All of the above combined";
 	echo "mcclowes-react-scripts < project name : new-project > - create new react project using mcclowes-scripts create react app config";
-	echo "gitJira <custom message> - make commit pertaining to jira issue";
 	echo "rebaseBitBucketRepo <destination> - rebase repo to new destination (with .git at the end)";
 	echo "workFunctions - echo a list of custom functions for work";
 }
@@ -136,7 +114,7 @@ function customFunctions {
 
 
 
-## --------------- Workshare Functions ---------------
+## --------------- Work Functions ---------------
 
 ## Utility function for other functions
 function gitCurrentBranch {
@@ -145,48 +123,41 @@ function gitCurrentBranch {
 
 alias gpr='gco master; git pull; gco -; git rebase master; git push --force-with-lease'
 
-function gitJira {
-	if [ $1 ]; then
-		git commit -am "$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,' | sed -e 's/-/ /g' -e 's/ /-/' -e 's/ .\+//' ) $*";
-	else 
-		git commit -am "$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,' | sed -e 's/-/ /g' -e 's/ /-/')";
-	fi
+function gcojira {
+	echo "WEB code:";
+	read CODE;
+	echo "Task:";
+	read TASK;
+	TR_TASK="$( echo "$TASK" | tr "[:upper:]" "[:lower:]" | tr ' ' '-' )";
+	BRANCH_NAME="WEB-$CODE-$TR_TASK"
+	git checkout master && git pull && git checkout -b "$BRANCH_NAME" && git push -u origin "$BRANCH_NAME"
 }
 
-function gitBranchJira {
-	NEW_BRANCH_NAME="$( echo "$*" | tr "[:upper:]" "[:lower:]" | sed -e "s/-/ /g" -e "s/ /-/g" -e 's/\(\w\+\)/\U\1/' )"
-	git checkout master && git pull && git checkout -b "$NEW_BRANCH_NAME" && git push -u origin "$NEW_BRANCH_NAME"
-}
-
-function gitRenameBranchCommits {
+function grename {
 	git rebase -i $( git merge-base $( gitCurrentBranch ) master )
 }
 
-function gitRebaseFromMaster {
-	git checkout master && git pull && git checkout $( gitCurrentBranch ) && git rebase master
-}
-
-function jestWatch {
+## Jest functions
+function jw { # jest watch
 	## -- means pass params to jest
 	npm test -- --watch --runInBand --bail ${1}
 }
 
-function jestWatchNoCache {
+function jwnc { # jest watch no cache
 	## -- means pass params to jest
 	npm test -- --watch --no-cache --runInBand --bail ${1}
 }
 
-function jestWatchAll {
+function jwa { # jest watch all
 	## -- means pass params to jest
 	npm test -- --watchAll --runInBand --bail ${1}
 }
 
 function workFunctions {
-	echo "gitJira <custom message> - make commit pertaining to jira issue, optionally add message";
-	echo "gitRenameBranchCommits - trigger rebase, allowing you to rename all commit since master";
-	echo "gitBranchJira <issue name> - Checkout a branch in the format required to correspond to a Jira issue";
-	echo "gitRebaseFromMaster - Rebase current branch from master";
-	echo "jestWatch <regex pattern for files> - Run tests, watch and bail";
-	echo "jestWatchNoCache <regex pattern for files> - Run tests, watch and bail";
-	echo "jestWatchAll <regex pattern for files> - Run all tests, watch and bail";
+	echo "gpr - git rebase on master";
+	echo "grename - trigger rebase, allowing you to rename all commit since master";
+	echo "gcojira - Checkout a branch in the format required to correspond to a Jira issue";
+	echo "jw <regex pattern for files> - Run tests, watch and bail";
+	echo "jwnc <regex pattern for files> - Run tests, watch and bail";
+	echo "jwa <regex pattern for files> - Run all tests, watch and bail";
 }
