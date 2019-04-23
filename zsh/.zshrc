@@ -79,7 +79,7 @@ function mcclowes-react-scripts {
 }
 
 function rebaseBitBucketRepo {
-	if [ ${var+x} ]; then 
+	if [ $# -eq 0 ]; then # nor args
 		echo "No destination is set";
 	else;
 		git remote rename origin bitbucket;
@@ -133,8 +133,16 @@ function gcojira {
 	git checkout master && git pull && git checkout -b "$BRANCH_NAME" && git push -u origin "$BRANCH_NAME"
 }
 
-function grename {
+function grebb { ## git rebase branch
 	git rebase -i $( git merge-base $( gitCurrentBranch ) master )
+}
+
+function greba { ## git rebase all
+	if [ $# -eq 0 ]; then # nor args
+		git rebase -i --root;
+	else;
+		git rebase -i "master~$1";
+	fi;
 }
 
 ## Jest functions
@@ -155,7 +163,8 @@ function jwa { # jest watch all
 
 function workFunctions {
 	echo "gpr - git rebase on master";
-	echo "grename - trigger rebase, allowing you to rename all commit since master";
+	echo "grebb - trigger rebase, allowing you to rebase all commits since branching off master";
+	echo "greba <number of commits to rebase> - trigger rebase, allowing you to rebase all commits ever or ~X";
 	echo "gcojira - Checkout a branch in the format required to correspond to a Jira issue";
 	echo "jw <regex pattern for files> - Run tests, watch and bail";
 	echo "jwnc <regex pattern for files> - Run tests, watch and bail";
