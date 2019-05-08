@@ -12,11 +12,16 @@ ZSH_THEME="bureau"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
+  codogo
+  experiments
   git
   githubutils
-  codogo
-  workshare
   imagetools
+  mcclowes
+  pluginlist
+  workshare
+  zsh-autosuggestions
+  zsh-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
